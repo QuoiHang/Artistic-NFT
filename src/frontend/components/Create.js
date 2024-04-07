@@ -8,19 +8,6 @@ const Create = ({ marketplace, nft }) => {
   const [name, setName] = useState("")
   const [desc, setDescription] = useState("")
   const [price, setPrice] = useState("")
-  // const uploadToIPFS = async (event) => {
-  //   event.preventDefault()
-  //   const file = event.target.files[0]
-  //   if (typeof file !== 'undefined') {
-  //     try {
-  //       const result = await client.add(file)
-  //       console.log(result)
-  //       setImage(`https://ipfs.infura.io/ipfs/${result.path}`)
-  //     } catch (error){
-  //       console.log("ipfs image upload error: ", error)
-  //     }
-  //   }
-  // }
 
   ////////////////////////////////////////////////////////
 
@@ -124,10 +111,10 @@ const Create = ({ marketplace, nft }) => {
               <Form.Control onChange={(e) => setFile(e.target.files[0])} size="lg" required type="file" name="file" />
               <Form.Control onChange={(e) => setName(e.target.value)} size="lg" required type="text" placeholder="Name" />
               <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" required as="textarea" placeholder="Description" />
-              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" placeholder="Price in ETH" />
+              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" min="1" placeholder="Price in ETH" />
               <div className="d-grid px-0">
-                <Button onClick={sendFileToIPFS} variant="primary" size="lg">
-                  Create NFT in Udem Marketplace!
+                <Button className='button-blue' onClick={sendFileToIPFS} variant="primary" size="lg">
+                  Mint NFT in Udem Marketplace!
                 </Button>
               </div>
             </Row>

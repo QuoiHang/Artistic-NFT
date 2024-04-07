@@ -4,7 +4,6 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  
   // Get the ContractFactories and Signers here.
   const NFT = await ethers.getContractFactory("NFT");
   const Marketplace = await ethers.getContractFactory("Marketplace");

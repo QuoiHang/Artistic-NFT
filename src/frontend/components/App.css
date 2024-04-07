@@ -6,3 +6,11 @@ body{
 .App {
   text-align: center;
 }
+
+.button-blue {
+  background-color: #0057ac;
+}
+
+.button-blue:hover {
+  background-color: #0b113a;
+}

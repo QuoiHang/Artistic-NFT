@@ -7,7 +7,7 @@ import {
 import Navigation from './Navbar';
 import Home from './Home.js'
 import Create from './Create.js'
-import MyListedItems from './MyListedItems.js'
+import MyArtifacts from './MyArtifacts.js'
 import MyPurchases from './MyPurchases.js'
 
 import MarketplaceAbi from '../contractsData/Marketplace.json'
@@ -75,8 +75,8 @@ function App() {
               <Route path="/create" element={
                 <Create marketplace={marketplace} nft={nft} />
               } />
-              <Route path="/my-listed-items" element={
-                <MyListedItems marketplace={marketplace} nft={nft} account={account} />
+              <Route path="/my-artifacts" element={
+                <MyArtifacts marketplace={marketplace} nft={nft} account={account} />
               } />
               <Route path="/my-purchases" element={
                 <MyPurchases marketplace={marketplace} nft={nft} account={account} />
