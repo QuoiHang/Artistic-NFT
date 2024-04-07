@@ -2,8 +2,6 @@ import axios from 'axios';
 import { useState } from 'react'
 import { ethers } from "ethers"
 import { Row, Form, Button } from 'react-bootstrap'
-// import { create as ipfsHttpClient } from 'ipfs-http-client'
-// const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
 
 const Create = ({ marketplace, nft }) => {
   const [fileImg, setFile] = useState(null);
@@ -26,15 +24,15 @@ const Create = ({ marketplace, nft }) => {
 
   ////////////////////////////////////////////////////////
 
-  let REACT_APP_PINATA_API_KEY="ed269603055a4337e099"
-  let REACT_APP_PINATA_SECRET_API_KEY="fad0b854d1e45936b725415469d0410d1d3c08ec8d283e828e1690fb24ee4801"
+  const REACT_APP_PINATA_API_KEY="ed269603055a4337e099"
+  const REACT_APP_PINATA_SECRET_API_KEY="fad0b854d1e45936b725415469d0410d1d3c08ec8d283e828e1690fb24ee4801"
 
   const sendJSONtoIPFS = async (ImgHash) => {
 
     try {
-
       const resJSON = await axios({
         method: "post",
+        // Use Pinata as IPFS to store raw file
         url: "https://api.pinata.cloud/pinning/pinJsonToIPFS",
         data: {
           "name": name,
@@ -43,13 +41,9 @@ const Create = ({ marketplace, nft }) => {
         },
         headers: {
           'pinata_api_key': REACT_APP_PINATA_API_KEY,
-          'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY,
-
-        },
+          'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY
+        }
       });
-
-      // https://gateway.pinata.cloud/ipfs/QmZ6iZAhazHyakzynC4sxZ6r6cikJmS69mZaCoyburKuq
-
 
       const tokenURI = `https://gateway.pinata.cloud/ipfs/${resJSON.data.IpfsHash}`;
       console.log("Token URI", tokenURI);
@@ -59,10 +53,7 @@ const Create = ({ marketplace, nft }) => {
       console.log("JSON to IPFS: ")
       console.log(error);
     }
-
-
   }
-
 
   ////////////////////////////////////////////////////////
 
@@ -94,7 +85,6 @@ const Create = ({ marketplace, nft }) => {
         console.log(ImgHash);
         sendJSONtoIPFS(ImgHash)
 
-
       } catch (error) {
         console.log("File to IPFS: ")
         console.log(error)
@@ -114,7 +104,6 @@ const Create = ({ marketplace, nft }) => {
   //   }
   // }
   const mintThenList = async (uri) => {
-    // const uri = `https://ipfs.infura.io/ipfs/${result.path}`
     // mint nft 
     await (await nft.mint(uri)).wait()
     // get tokenId of new nft 
@@ -138,7 +127,7 @@ const Create = ({ marketplace, nft }) => {
               <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" placeholder="Price in ETH" />
               <div className="d-grid px-0">
                 <Button onClick={sendFileToIPFS} variant="primary" size="lg">
-                  Create & List NFT!
+                  Create NFT in Udem Marketplace!
                 </Button>
               </div>
             </Row>

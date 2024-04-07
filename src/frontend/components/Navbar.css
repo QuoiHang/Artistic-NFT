@@ -1,0 +1,7 @@
+.navbar {
+    background-color: #0057ac !important;
+  }
+
+  .navbar-txt:hover{
+    font-weight: bold;
+  }
