@@ -2,9 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
 import "hardhat/console.sol";
 
 contract Marketplace is ReentrancyGuard {
@@ -33,6 +31,7 @@ contract Marketplace is ReentrancyGuard {
         uint price,
         address indexed seller
     );
+    
     event Bought(
         uint itemId,
         address indexed nft,
@@ -76,9 +75,9 @@ contract Marketplace is ReentrancyGuard {
     function purchaseItem(uint _itemId) external payable nonReentrant {
         uint _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
-        require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
-        require(msg.value >= _totalPrice, "not enough ether to cover item price and market fee");
-        require(!item.sold, "item already sold");
+        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        require(msg.value >= _totalPrice, "not enough Ether to cover item price and market fee");
+        require(!item.sold, "Item already sold");
         
         // pay seller and feeAccount
         item.seller.transfer(item.price);
@@ -97,6 +96,7 @@ contract Marketplace is ReentrancyGuard {
             msg.sender
         );
     }
+
     function getTotalPrice(uint _itemId) view public returns(uint){
         return((items[_itemId].price*(100 + feePercent))/100);
     }

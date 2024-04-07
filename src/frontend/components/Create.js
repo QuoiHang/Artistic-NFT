@@ -9,8 +9,6 @@ const Create = ({ marketplace, nft }) => {
   const [desc, setDescription] = useState("")
   const [price, setPrice] = useState("")
 
-  ////////////////////////////////////////////////////////
-
   const REACT_APP_PINATA_API_KEY="ed269603055a4337e099"
   const REACT_APP_PINATA_SECRET_API_KEY="fad0b854d1e45936b725415469d0410d1d3c08ec8d283e828e1690fb24ee4801"
 
@@ -34,7 +32,6 @@ const Create = ({ marketplace, nft }) => {
 
       const tokenURI = `https://gateway.pinata.cloud/ipfs/${resJSON.data.IpfsHash}`;
       console.log("Token URI", tokenURI);
-      //mintNFT(tokenURI, currentAccount)   // pass the winner
       mintThenList(tokenURI)
     } catch (error) {
       console.log("JSON to IPFS: ")
@@ -42,18 +39,15 @@ const Create = ({ marketplace, nft }) => {
     }
   }
 
-  ////////////////////////////////////////////////////////
-
   const sendFileToIPFS = async (e) => {
 
     e.preventDefault();
-    console.log("123");
+    console.log("Sending File To IPFS");
     console.log(e);
 
     if (fileImg) {
       try {
-
-        console.log("1234");
+        console.log("Processing File");
         const formData = new FormData();
         formData.append("file", fileImg);
         console.log(formData)
@@ -79,17 +73,6 @@ const Create = ({ marketplace, nft }) => {
     }
   }
 
-  ////////////////////////////////////////////////////////
-  // const createNFT = async () => {
-  //   if (!image || !price || !name || !description) return
-  //   try{
-  //     sendJSONtoIPFS(image)
-  //     // const result = await client.add(JSON.stringify({image, price, name, description}))
-  //     // mintThenList(result)
-  //   } catch(error) {
-  //     console.log("ipfs uri upload error: ", error)
-  //   }
-  // }
   const mintThenList = async (uri) => {
     // mint nft 
     await (await nft.mint(uri)).wait()
@@ -102,7 +85,6 @@ const Create = ({ marketplace, nft }) => {
     await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()
   }
   return (
-
     <div className="container-fluid mt-5">
       <div className="row">
         <main role="main" className="col-lg-12 mx-auto" style={{ maxWidth: '1000px' }}>
@@ -111,7 +93,7 @@ const Create = ({ marketplace, nft }) => {
               <Form.Control onChange={(e) => setFile(e.target.files[0])} size="lg" required type="file" name="file" />
               <Form.Control onChange={(e) => setName(e.target.value)} size="lg" required type="text" placeholder="Name" />
               <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" required as="textarea" placeholder="Description" />
-              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" min="1" placeholder="Price in ETH" />
+              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" min="0.1" placeholder="Price in ETH" />
               <div className="d-grid px-0">
                 <Button className='button-blue' onClick={sendFileToIPFS} variant="primary" size="lg">
                   Mint NFT in Udem Marketplace!

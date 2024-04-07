@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\huang\\Documents\\GitHub\\Artistic-NFT\\src\\backend\\contracts\\Marketplace.sol": {
-      "lastModificationDate": 1712477517771,
-      "contentHash": "88741e932a033c63b3258d93207592ac",
+      "lastModificationDate": 1712518309763,
+      "contentHash": "e0cf2f1c05226261834dfd0168b1faae",
       "sourceName": "src/backend/contracts/Marketplace.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -477,8 +477,8 @@
       ]
     },
     "C:\\Users\\huang\\Documents\\GitHub\\Artistic-NFT\\src\\backend\\contracts\\NFT.sol": {
-      "lastModificationDate": 1712477517774,
-      "contentHash": "56aaa73e6a75d9d8a7526369db01057a",
+      "lastModificationDate": 1712519937439,
+      "contentHash": "8c726c06863039a44b0c3d900e8f9601",
       "sourceName": "src/backend/contracts/NFT.sol",
       "solcConfig": {
         "version": "0.8.4",
