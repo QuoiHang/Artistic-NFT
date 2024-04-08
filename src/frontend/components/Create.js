@@ -1,14 +1,17 @@
-import axios from 'axios';
+import axios from 'axios'; // Upload/ download files from IPFS
 import { useState } from 'react'
 import { ethers } from "ethers"
 import { Row, Form, Button } from 'react-bootstrap'
 
 const Create = ({ marketplace, nft }) => {
+  // Assign current state and a setter
   const [fileImg, setFile] = useState(null);
+
   const [name, setName] = useState("")
   const [desc, setDescription] = useState("")
   const [price, setPrice] = useState("")
 
+  // Assume it is the IPFS for storing all NFTs
   const REACT_APP_PINATA_API_KEY="ed269603055a4337e099"
   const REACT_APP_PINATA_SECRET_API_KEY="fad0b854d1e45936b725415469d0410d1d3c08ec8d283e828e1690fb24ee4801"
 
@@ -33,6 +36,7 @@ const Create = ({ marketplace, nft }) => {
       const tokenURI = `https://gateway.pinata.cloud/ipfs/${resJSON.data.IpfsHash}`;
       console.log("Token URI", tokenURI);
       mintThenList(tokenURI)
+
     } catch (error) {
       console.log("JSON to IPFS: ")
       console.log(error);
@@ -85,6 +89,7 @@ const Create = ({ marketplace, nft }) => {
     await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()
   }
   return (
+
     <div className="container-fluid mt-5">
       <div className="row">
         <main role="main" className="col-lg-12 mx-auto" style={{ maxWidth: '1000px' }}>
@@ -104,7 +109,7 @@ const Create = ({ marketplace, nft }) => {
         </main>
       </div>
     </div>
-    
+
     )
 }
 
