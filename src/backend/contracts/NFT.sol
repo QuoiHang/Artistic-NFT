@@ -8,6 +8,7 @@ contract NFT is ERC721URIStorage {
     // Count how many NFTs have been minted
     uint public tokenCount;
 
+    // ERC721(name, symbol)
     constructor() ERC721("DApp NFT", "DAPP"){}
 
     // Memory: the address of the input string

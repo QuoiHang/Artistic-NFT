@@ -5,11 +5,13 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "hardhat/console.sol";
 
+// Use reentrancy guard to prevent reentrancy attacks
 contract Marketplace is ReentrancyGuard {
-
     // State Variables
-    address payable public immutable feeAccount; // the account that receives fees
-    uint public immutable feePercent; // the fee percentage on sales 
+    // the account that receives fees
+    address payable public immutable feeAccount; 
+    // _feePercent is the percentage of the fee that will be taken from the sale price
+    uint public immutable feePercent;
     uint public itemCount; 
 
     struct Item {
@@ -41,8 +43,11 @@ contract Marketplace is ReentrancyGuard {
         address indexed buyer
     );
 
+    // Constructor
     constructor(uint _feePercent) {
+        // feeAccount (sender) is the account that deploys the contract
         feeAccount = payable(msg.sender);
+        // feePercent is the service fee over the sale price
         feePercent = _feePercent;
     }
 
@@ -59,15 +64,18 @@ contract Marketplace is ReentrancyGuard {
             _nft,
             _tokenId,
             _price,
+            // msg.sender is the seller in makeItem
             payable(msg.sender),
             false
         );
+
         // emit Offered event
         emit Offered(
             itemCount,
             address(_nft),
             _tokenId,
             _price,
+            // msg.sender is the seller in makeItem
             msg.sender
         );
     }
@@ -76,28 +84,32 @@ contract Marketplace is ReentrancyGuard {
         uint _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
-        require(msg.value >= _totalPrice, "not enough Ether to cover item price and market fee");
+        require(msg.value >= _totalPrice, "Not enough Ether to cover item price and market fee");
         require(!item.sold, "Item already sold");
         
-        // pay seller and feeAccount
+        // transfer(address to, uint256 value)
+        // Pay seller and feeAccount
         item.seller.transfer(item.price);
         feeAccount.transfer(_totalPrice - item.price);
-        // update item to sold
+        // Update item to sold
         item.sold = true;
-        // transfer nft to buyer
+        // safeTransferFrom(address from, address to, uint256 tokenId)
+        // Transfer nft to buyer
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
-        // emit Bought event
+        
+        // Emit Bought event
         emit Bought(
             _itemId,
             address(item.nft),
             item.tokenId,
             item.price,
             item.seller,
+            // msg.sender is the buyer in purchaseItem
             msg.sender
         );
     }
 
     function getTotalPrice(uint _itemId) view public returns(uint){
-        return((items[_itemId].price*(100 + feePercent))/100);
+        return((items[_itemId].price * (100 + feePercent)) / 100);
     }
 }

@@ -19,6 +19,7 @@ const Home = ({ marketplace, nft }) => {
         const metadata = await response.json()
         // get total price of item (item price + fee)
         const totalPrice = await marketplace.getTotalPrice(item.itemId)
+        
         // Add item to items array
         items.push({
           totalPrice,
@@ -75,8 +76,9 @@ const Home = ({ marketplace, nft }) => {
           </Row>
         </div>
         : (
-          <main style={{ padding: "1rem 0" }}>
-            <h2>No available NFT in the Marketplace</h2>
+          <main style={{ padding: "3rem 0" }}>
+            <h2>No available NFT in the Marketplace.</h2>
+            <h2>Come back later :)</h2>
           </main>
         )}
     </div>

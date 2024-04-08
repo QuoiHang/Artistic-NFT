@@ -5,6 +5,16 @@ import { Row, Col, Card } from 'react-bootstrap'
 export default function MyPurchases({ marketplace, nft, account }) {
   const [loading, setLoading] = useState(true)
   const [purchases, setPurchases] = useState([])
+  const [balance, setBalance] = useState("0") // State variable for account balance
+
+  // Function to fetch and set the balance
+  const loadBalance = async () => {
+    if (marketplace.provider && account) {
+      const balance = await marketplace.provider.getBalance(account);
+      setBalance(ethers.utils.formatEther(balance));
+    }
+  };
+
   const loadPurchasedItems = async () => {
     // Fetch purchased items from marketplace by quering Offered events with the buyer set as the user
     const filter =  marketplace.filters.Bought(null,null,null,null,null,account)
@@ -34,9 +44,26 @@ export default function MyPurchases({ marketplace, nft, account }) {
     setLoading(false)
     setPurchases(purchases)
   }
+
   useEffect(() => {
     loadPurchasedItems()
-  }, [])
+    loadBalance()
+  }, [account])
+
+  useEffect(() => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const updateBalanceOnNewBlock = async () => {
+      await loadBalance();
+    };
+
+    provider.on("block", updateBalanceOnNewBlock);
+
+    return () => {
+      provider.off("block", updateBalanceOnNewBlock);
+    };
+  }, [account, marketplace.provider]); // Re-run when account or provider change
+
   if (loading) return (
     <main style={{ padding: "1rem 0" }}>
       <h2>Loading...</h2>
@@ -44,6 +71,13 @@ export default function MyPurchases({ marketplace, nft, account }) {
   )
   return (
     <div className="flex justify-center">
+      <div className="balance-info">
+        {/* Displaying the balance */}
+        <h3>Your Balance: {balance} ETH</h3>
+      </div>
+
+      <hr className="hr" />
+
       {purchases.length > 0 ?
         <div className="px-5 container">
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
@@ -51,7 +85,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
               <Col key={idx} className="overflow-hidden">
                 <Card>
                   <Card.Img variant="top" src={item.image} />
-                  <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+                  <Card.Footer>Bought at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
                 </Card>
               </Col>
             ))}

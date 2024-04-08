@@ -14,3 +14,7 @@ body{
 .button-blue:hover {
   background-color: #0b113a;
 }
+
+.balance-info{
+  padding-top: 1em;
+}

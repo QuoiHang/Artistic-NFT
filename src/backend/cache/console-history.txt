@@ -1,3 +1,8 @@
+console.log(ethers.utils.formatEther(ba2), "ETH");
+console.log(ethers.utils.formatEther(ba1), "ETH");
+const ba2 = await add1.getBalance();
+const ba1 = await add0.getBalance();
+const [add0, add1] = await ethers.getSigners();
 feeAccount
 const feeAccount = await marketplace.feeAccount()
 feePercent

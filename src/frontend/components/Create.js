@@ -18,22 +18,32 @@ const Create = ({ marketplace, nft }) => {
   const sendJSONtoIPFS = async (ImgHash) => {
 
     try {
-      const resJSON = await axios({
+      console.log("Processing Json");
+      // Create a Blob from your JSON data
+      const jsonBlob = new Blob([JSON.stringify({
+        name: name,
+        description: desc,
+        image: ImgHash
+      })], { type: 'application/json' });
+
+      // Create FormData and append the Blob as a file
+      // formData.append(fieldName, file, fileName);
+      const formData = new FormData();
+      formData.append("file", jsonBlob, `${name}.json`);
+
+      // Use the pinFileToIPFS endpoint
+      const resFile = await axios({
         method: "post",
-        // Use Pinata as IPFS to store raw file
-        url: "https://api.pinata.cloud/pinning/pinJsonToIPFS",
-        data: {
-          "name": name,
-          "description": desc,
-          "image": ImgHash
-        },
+        url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        data: formData,
         headers: {
           'pinata_api_key': REACT_APP_PINATA_API_KEY,
-          'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY
-        }
+          'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY,
+          "Content-Type": "multipart/form-data"
+        },
       });
 
-      const tokenURI = `https://gateway.pinata.cloud/ipfs/${resJSON.data.IpfsHash}`;
+      const tokenURI = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
       console.log("Token URI", tokenURI);
       mintThenList(tokenURI)
 
@@ -55,6 +65,7 @@ const Create = ({ marketplace, nft }) => {
         const formData = new FormData();
         formData.append("file", fileImg);
         console.log(formData)
+
         const resFile = await axios({
           method: "post",
           url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
@@ -98,7 +109,7 @@ const Create = ({ marketplace, nft }) => {
               <Form.Control onChange={(e) => setFile(e.target.files[0])} size="lg" required type="file" name="file" />
               <Form.Control onChange={(e) => setName(e.target.value)} size="lg" required type="text" placeholder="Name" />
               <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" required as="textarea" placeholder="Description" />
-              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" min="0.1" placeholder="Price in ETH" />
+              <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" min="1" placeholder="Price in ETH" />
               <div className="d-grid px-0">
                 <Button className='button-blue' onClick={sendFileToIPFS} variant="primary" size="lg">
                   Mint NFT in Udem Marketplace!
