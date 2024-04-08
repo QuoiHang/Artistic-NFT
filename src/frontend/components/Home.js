@@ -76,7 +76,7 @@ const Home = ({ marketplace, nft }) => {
           </Row>
         </div>
         : (
-          <main style={{ padding: "3rem 0" }}>
+          <main style={{ padding: "3em 0" }}>
             <h2>No available NFT in the Marketplace.</h2>
             <h2>Come back later :)</h2>
           </main>

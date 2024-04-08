@@ -12,6 +12,12 @@ function renderSoldArtifacts(items) {
           <Col key={idx} className="overflow-hidden">
             <Card>
               <Card.Img variant="top" src={item.image} />
+              <Card.Body color="secondary">
+                <Card.Title>{item.name}</Card.Title>
+                <Card.Text>
+                    {item.description}
+                </Card.Text>
+              </Card.Body>
               <Card.Footer>
                 Sold at {ethers.utils.formatEther(item.totalPrice)} ETH <br/> Recieved {ethers.utils.formatEther(item.price)} ETH
               </Card.Footer>
@@ -114,6 +120,12 @@ export default function MyListedArtifacts({ marketplace, nft, account }) {
               <Col key={idx} className="overflow-hidden">
                 <Card>
                   <Card.Img variant="top" src={item.image} />
+                  <Card.Body color="secondary">
+                    <Card.Title>{item.name}</Card.Title>
+                    <Card.Text>
+                        {item.description}
+                    </Card.Text>
+                  </Card.Body>
                   <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
                 </Card>
               </Col>

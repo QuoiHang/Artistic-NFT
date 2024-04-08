@@ -38,7 +38,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         const imageHash = imageUploadResponse.data.IpfsHash;
 
         // Create JSON metadata and upload
-        const metadata = { name:`${name}`, description:`${description}`, image:`ipfs://${imageHash}` };
+        const metadata = { name:`${name}`, description:`${description}`, image:`https://gateway.pinata.cloud/ipfs/${imageHash}` };
         const jsonFilename = `${name}-${Date.now()}`; // Ensures unique filename
         const jsonFilePath = await createJsonFile(metadata, jsonFilename);
 
