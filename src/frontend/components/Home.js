@@ -49,6 +49,7 @@ const Home = ({ marketplace, nft, account }) => {
   }, [marketplace, nft]);
 
   const buyMarketItem = async (item) => {
+    console.log('Buying Market item:', item);
     await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
     loadMarketplaceItems()
   }
