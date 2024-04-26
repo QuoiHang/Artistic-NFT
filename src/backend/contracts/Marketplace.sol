@@ -15,9 +15,9 @@ contract Marketplace is ReentrancyGuard {
     uint public itemCount; 
 
     struct Item {
-        uint itemId;
+        uint itemId;    // the id of the item in the marketplace
         IERC721 nft;
-        uint tokenId;
+        uint tokenId;   // the id of the token in the nft contract
         uint price;
         address payable seller;
         bool sold;
@@ -58,6 +58,7 @@ contract Marketplace is ReentrancyGuard {
         itemCount ++;
         // transfer nft
         _nft.transferFrom(msg.sender, address(this), _tokenId);
+
         // add new item to items mapping
         items[itemCount] = Item (
             itemCount,
@@ -96,7 +97,8 @@ contract Marketplace is ReentrancyGuard {
         // safeTransferFrom(address from, address to, uint256 tokenId)
         // Transfer nft to buyer
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
-        
+        item.seller = payable(msg.sender);
+
         // Emit Bought event
         emit Bought(
             _itemId,
@@ -105,6 +107,30 @@ contract Marketplace is ReentrancyGuard {
             item.price,
             item.seller,
             // msg.sender is the buyer in purchaseItem
+            msg.sender
+        );
+    }
+
+    // Resell item
+    function resellItem(uint _itemId, uint _price) external nonReentrant {
+        Item storage item = items[_itemId];
+        require(_price > 0, "Price must be greater than zero");
+        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        require(msg.sender == item.seller, "Only the seller can resell the item");
+
+        item.price = _price;
+        item.sold = false;
+
+        // transfer nft
+        item.nft.transferFrom(msg.sender, address(this), item.tokenId);
+
+        // emit Offered event
+        emit Offered(
+            item.itemId,
+            address(item.nft),
+            item.tokenId,
+            _price,
+            // msg.sender is the seller in makeItem
             msg.sender
         );
     }
