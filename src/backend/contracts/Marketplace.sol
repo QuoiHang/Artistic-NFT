@@ -97,6 +97,7 @@ contract Marketplace is ReentrancyGuard {
         // safeTransferFrom(address from, address to, uint256 tokenId)
         // Transfer nft to buyer
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
+        // update seller to last buyer
         item.seller = payable(msg.sender);
 
         // Emit Bought event
@@ -126,7 +127,7 @@ contract Marketplace is ReentrancyGuard {
 
         // emit Offered event
         emit Offered(
-            item.itemId,
+            _itemId,
             address(item.nft),
             item.tokenId,
             _price,

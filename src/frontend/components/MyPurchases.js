@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ethers } from "ethers"
-import { Row, Col, Card } from 'react-bootstrap'
+import { Row, Col, Card, Form, Button } from 'react-bootstrap'
 
 export default function MyPurchases({ marketplace, nft, account }) {
   const [loading, setLoading] = useState(true)
@@ -45,6 +45,11 @@ export default function MyPurchases({ marketplace, nft, account }) {
     setPurchases(purchases)
   }
 
+  const resellItem = async (itemId, price) => {
+    const priceInWei = ethers.utils.parseEther(price.toString());
+    await marketplace.resellItem(itemId, priceInWei);
+  };
+
   useEffect(() => {
     loadPurchasedItems()
     loadBalance()
@@ -69,6 +74,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
       <h2>Loading...</h2>
     </main>
   )
+
   return (
     <div className="flex justify-center">
       <div className="balance-info">
@@ -87,9 +93,23 @@ export default function MyPurchases({ marketplace, nft, account }) {
                   <Card.Img variant="top" src={item.image} />
                   <Card.Body color="secondary">
                     <Card.Title>{item.name}</Card.Title>
-                    <Card.Text>
-                        {item.description}
-                    </Card.Text>
+                    <Card.Text>{item.description}</Card.Text>
+                    <Form.Control
+                      size="lg"
+                      required
+                      type="number"
+                      min="1"
+                      placeholder="Price in ETH"
+                      onChange={(e) => item.resellPrice = e.target.value}/>
+                    <div className="d-grid px-0">
+                      <Button
+                        className='button-blue'
+                        onClick={() => resellItem(item.itemId, item.resellPrice)}
+                        variant="primary"
+                        size="lg">
+                        Resell NFT
+                      </Button>
+                    </div>
                   </Card.Body>
                   <Card.Footer>Bought at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
                 </Card>

@@ -16,7 +16,6 @@ const Home = ({ marketplace, nft, account }) => {
     }
   }, [marketplace.provider, account]); // Dependencies for which the function should re-run
   
-
   const loadMarketplaceItems = useCallback(async () => {
     // Load all unsold items
     const itemCount = await marketplace.itemCount()
@@ -52,7 +51,26 @@ const Home = ({ marketplace, nft, account }) => {
     console.log('Buying Market item:', item);
     await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
     loadMarketplaceItems()
+    console.log('Latest Market item:', item);
   }
+
+  /*
+  const fetchItemSaleHistory = useCallback(async (itemId) => {
+    // Fetch item's purchase history from the marketplace
+    const filter = marketplace.filters.Bought(itemId, null, null, null, null, null)
+    const results = await marketplace.queryFilter(filter)
+    // Process results to extract only price and associated block number
+    const priceHistory = [];
+    for (const event of results) {
+        const block = await marketplace.provider.getBlock(event.blockNumber);
+        priceHistory.push({
+            price: event.args.price.toString(), // Convert BigNumber to string if needed
+            date: new Date(block.timestamp * 1000) // Convert Unix timestamp to Date object
+        });
+    }
+    return priceHistory;
+  }, [marketplace]);
+  */
 
   useEffect(() => {
     loadMarketplaceItems();
@@ -120,6 +138,9 @@ const Home = ({ marketplace, nft, account }) => {
           <hr className="hr" />
           <h2>NFTs in History</h2>
           {/* Display all items */}
+          
+          {/* TODO: show all items in history */}
+
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {items.map((item, idx) => (
               <Col key={idx} className="overflow-hidden">
