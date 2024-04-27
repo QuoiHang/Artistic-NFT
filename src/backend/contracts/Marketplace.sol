@@ -11,14 +11,14 @@ contract Marketplace is ReentrancyGuard {
     // the account that receives fees
     address payable public immutable feeAccount; 
     // _feePercent is the percentage of the fee that will be taken from the sale price
-    uint public immutable feePercent;
-    uint public itemCount; 
+    uint256 public immutable feePercent;
+    uint256 public itemCount; 
 
     struct Item {
-        uint itemId;    // the id of the item in the marketplace
+        uint256 itemId;    // the id of the item in the marketplace
         IERC721 nft;
-        uint tokenId;   // the id of the token in the nft contract
-        uint price;
+        uint256 tokenId;   // the id of the token in the nft contract
+        uint256 price;
         address payable seller;
         bool sold;
         address creator;
@@ -28,24 +28,24 @@ contract Marketplace is ReentrancyGuard {
     mapping(uint256 => Item) public items;
 
     event Offered(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller
     );
     
     event Bought(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller,
         address indexed buyer
     );
 
     // Constructor
-    constructor(uint _feePercent) {
+    constructor(uint256 _feePercent) {
         // feeAccount (sender) is the account that deploys the contract
         feeAccount = payable(msg.sender);
         // feePercent is the service fee over the sale price
@@ -53,7 +53,7 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // Make item to offer on the marketplace
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
+    function makeItem(IERC721 _nft, uint256 _tokenId, uint256 _price) external nonReentrant {
         require(_price > 0, "Price must be greater than zero");
         // increment itemCount
         itemCount ++;
@@ -83,8 +83,8 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
-    function purchaseItem(uint _itemId) external payable nonReentrant {
-        uint _totalPrice = getTotalPrice(_itemId);
+    function purchaseItem(uint256 _itemId) external payable nonReentrant {
+        uint256 _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
         require(msg.value >= _totalPrice, "Not enough Ether to cover item price and market fee");
@@ -120,7 +120,7 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // Resell item
-    function resellItem(uint _itemId, uint _price) external nonReentrant {
+    function resellItem(uint256 _itemId, uint256 _price) external nonReentrant {
         Item storage item = items[_itemId];
         require(_price > 0, "Price must be greater than zero");
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
@@ -144,17 +144,12 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
-    function getTotalPrice(uint _itemId) view public returns(uint){
+    function getTotalPrice(uint256 _itemId) view public returns(uint256){
         return((items[_itemId].price * (100 + feePercent)) / 100);
     }
 
-    /*
-    function isOwner(uint itemId) public view returns (bool) {
+    function isOwner(uint256 itemId) public view returns (bool) {
         return (items[itemId].seller == msg.sender);
     }
 
-    function isCreator(uint itemId) public view returns (bool) {
-        return (items[itemId].creator == msg.sender);
-    }
-    */
 }

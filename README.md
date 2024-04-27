@@ -1,9 +1,9 @@
 # Artistic-NFT
 
-Steps to run the project
+Steps to proceed in Terminal in order to run the project
 
 ## 0. mpn install
-to install all dependencies
+Before running or modifying the project, install all dependencies
 
 ## 1. npx hardhat compile
 to compile smart contracts
@@ -21,11 +21,10 @@ we deploy the smart contract into testnet
 ## 4. ~~npm run start~~
 ~~to open dapp on explorer~~
 ## 4. npm run dev
-run together w/ backend  
+run together with backend  
 
 ## npx hardhat console --network localhost
 to open console to interact with smart contract
-
 
 ## 5. Notes
 ### in case the balance is not updated, we can use the following command to update the balance
