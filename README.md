@@ -2,8 +2,11 @@
 
 Steps to run the project
 
-## 1. mpn install
+## 0. mpn install
 to install all dependencies
+
+## 1. npx hardhat compile
+to compile smart contracts
 
 ## 2. npx hardhat node
 to get available nodes to start with

@@ -6,6 +6,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
   const [loading, setLoading] = useState(true)
   const [purchases, setPurchases] = useState([])
   const [balance, setBalance] = useState("0") // State variable for account balance
+  const [resellPrice, setResellPrice] = useState({}); // Object to hold resell prices by itemId
 
   // Function to fetch and set the balance
   const loadBalance = async () => {
@@ -93,13 +94,33 @@ export default function MyPurchases({ marketplace, nft, account }) {
     }
   }
 
-  const resellItem = async (itemId, price) => {
-    console.log(`Reselling item ${itemId} at price ${price}`);
-    console.log('Selling item:', marketplace.items(itemId));
+  // Adjusting resell logic
+  const handlePriceChange = (itemId, value) => {
+    if (!value) return; // Prevent setting undefined or empty values
+    setResellPrice(prev => ({ ...prev, [itemId]: value }));
+  };
+
+  const resellItem = async (itemId) => {
+    console.log(`Reselling item ${itemId} at price ${resellPrice[itemId]}`);
+    const itemPromise = marketplace.items(itemId);
+    // resolve promise to get the tokenId
+    const item = await itemPromise;
+    const tokenId = item.tokenId;
+    console.log(tokenId);
+    // console.log(realItem.tokenId);
     setLoading(true);  // Set loading to true before the reselling starts
 
     try {
-      const priceInWei = ethers.utils.parseEther(price.toString());
+      // Check if the marketplace is approved to transfer the NFT
+      const approvedAddress = await nft.getApproved(tokenId);
+      const isApproved = approvedAddress === marketplace.address;
+      if (!isApproved) {
+        // Approve the marketplace contract to transfer the NFT
+        const approveTx = await nft.approve(marketplace.address, tokenId);
+        await approveTx.wait();
+      }
+
+      const priceInWei = ethers.utils.parseEther(resellPrice[itemId].toString());
       const transaction = await marketplace.resellItem(itemId, priceInWei);
       await transaction.wait();
       // Filter out the resold item from the purchases array
@@ -164,11 +185,11 @@ export default function MyPurchases({ marketplace, nft, account }) {
                         type="number"
                         min="1"
                         placeholder="Price in ETH"
-                        onChange={(e) => item.resellPrice = e.target.value}/>
+                        onChange={(e) => handlePriceChange(item.itemId, e.target.value)}/>
                     <div className="d-grid px-0">
                       <Button
                         className='button-blue'
-                        onClick={() => resellItem(item.itemId, item.resellPrice)}
+                        onClick={() => resellItem(item.itemId)}
                         variant="primary"
                         size="lg">
                         Resell NFT

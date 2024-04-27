@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\huang\\Documents\\GitHub\\Artistic-NFT\\src\\backend\\contracts\\Marketplace.sol": {
-      "lastModificationDate": 1714186466101,
-      "contentHash": "0a26e9d656a427aab3938806f175b676",
+      "lastModificationDate": 1714193287305,
+      "contentHash": "def587d2582f294293c19d264f9ff79d",
       "sourceName": "src/backend/contracts/Marketplace.sol",
       "solcConfig": {
         "version": "0.8.4",

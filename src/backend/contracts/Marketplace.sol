@@ -25,7 +25,7 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // itemId -> Item
-    mapping(uint => Item) public items;
+    mapping(uint256 => Item) public items;
 
     event Offered(
         uint itemId,
@@ -114,11 +114,17 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
+    function isApprovedOrOwner(address nftContract, uint256 tokenId) public view returns (bool) {
+        IERC721 nft = IERC721(nftContract);
+        return (nft.getApproved(tokenId) == address(this) || nft.ownerOf(tokenId) == msg.sender);
+    }
+
     // Resell item
     function resellItem(uint _itemId, uint _price) external nonReentrant {
         Item storage item = items[_itemId];
         require(_price > 0, "Price must be greater than zero");
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        require(isApprovedOrOwner(address(item.nft), item.tokenId), "Contract not approved to manage this NFT");
         require(msg.sender == item.seller, "Only the seller can resell the item");
 
         item.price = _price;
@@ -142,11 +148,11 @@ contract Marketplace is ReentrancyGuard {
         return((items[_itemId].price * (100 + feePercent)) / 100);
     }
 
+    /*
     function isOwner(uint itemId) public view returns (bool) {
         return (items[itemId].seller == msg.sender);
     }
 
-    /*
     function isCreator(uint itemId) public view returns (bool) {
         return (items[itemId].creator == msg.sender);
     }
