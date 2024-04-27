@@ -19,7 +19,7 @@ function renderSoldArtifacts(items) {
                 </Card.Text>
               </Card.Body>
               <Card.Footer>
-                Sold at {ethers.utils.formatEther(item.totalPrice)} ETH <br/> Recieved {ethers.utils.formatEther(item.price)} ETH
+                Lastly sold at {ethers.utils.formatEther(item.totalPrice)} ETH
               </Card.Footer>
             </Card>
           </Col>
@@ -44,38 +44,48 @@ export default function MyListedArtifacts({ marketplace, nft, account }) {
   };
 
   const loadListedArtifacts = async () => {
-    // Load all sold artifacts that the user listed
-    const itemCount = await marketplace.itemCount()
-    let listedArtifacts = []
-    let soldArtifacts = []
+    setLoading(true);
 
-    for (let indx = 1; indx <= itemCount; indx++) {
-      const i = await marketplace.items(indx)
-      if (i.seller.toLowerCase() === account) {
-        // get uri url from nft contract
-        const uri = await nft.tokenURI(i.tokenId)
-        // use uri to fetch the nft metadata stored on ipfs 
-        const response = await fetch(uri)
-        const metadata = await response.json()
-        // get total price of artifact (item price + fee)
-        const totalPrice = await marketplace.getTotalPrice(i.itemId)
-        // define listed artifact object
-        let item = {
-          totalPrice,
-          price: i.price,
-          itemId: i.itemId,
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image
+    try{
+      // Load all minted artifacts that the user listed
+      const itemCount = await marketplace.itemCount()
+      let listedArtifacts = []
+      let soldArtifacts = []
+
+      // Start from 1 because the contract's itemIds start from 1
+      for (let index = 1; index <= itemCount; index++) {
+        const i = await marketplace.items(index)
+        
+        if (i.creator.toLowerCase() === account) {
+          // get uri url from nft contract
+          const uri = await nft.tokenURI(i.tokenId)
+          // use uri to fetch the nft metadata stored on ipfs 
+          const response = await fetch(uri)
+          const metadata = await response.json()
+          // get total price of artifact (item price + fee)
+          const totalPrice = await marketplace.getTotalPrice(i.itemId)
+          // define listed artifact object
+          let item = {
+            totalPrice,
+            price: i.price,
+            itemId: i.itemId,
+            name: metadata.name,
+            description: metadata.description,
+            image: metadata.image
+          }
+          listedArtifacts.push(item)
+          
+          // Add listed artifact to sold artifacts array if sold
+          if (i.sold) soldArtifacts.push(item)
         }
-        listedArtifacts.push(item)
-        // Add listed artifact to sold artifacts array if sold
-        if (i.sold) soldArtifacts.push(item)
       }
+      setListedArtifacts(listedArtifacts)
+      setSoldArtifacts(soldArtifacts)
+    }catch (error) {
+      console.error("Failed to load listed artifacts:", error);
+    } finally {
+      setLoading(false);  // End the loading process
     }
-    setLoading(false)
-    setListedArtifacts(listedArtifacts)
-    setSoldArtifacts(soldArtifacts)
   }
 
   useEffect(() => {

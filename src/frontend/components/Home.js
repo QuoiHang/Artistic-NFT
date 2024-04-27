@@ -17,42 +17,48 @@ const Home = ({ marketplace, nft, account }) => {
   }, [marketplace.provider, account]); // Dependencies for which the function should re-run
   
   const loadMarketplaceItems = useCallback(async () => {
-    // Load all unsold items
-    const itemCount = await marketplace.itemCount()
-    let items = []
-    for (let i = 1; i <= itemCount; i++) {
-      const item = await marketplace.items(i)
+    setLoading(true);
+    
+    try{
+      // Load all unsold items
+      const itemCount = await marketplace.itemCount()
+      let items = []
+      for (let i = 1; i <= itemCount; i++) {
+        const item = await marketplace.items(i)
 
-      // get uri url from nft contract
-      const uri = await nft.tokenURI(item.tokenId)
-      // use uri to fetch the nft metadata stored on ipfs 
-      const response = await fetch(uri)
-      const metadata = await response.json()
-      // get total price of item (item price + fee)
-      const totalPrice = await marketplace.getTotalPrice(item.itemId)
-      
-      // Add item to items array
-      items.push({
-        totalPrice,
-        itemId: item.itemId,
-        seller: item.seller,
-        name: metadata.name,
-        description: metadata.description,
-        image: metadata.image,
-        sold: item.sold
-      })
-
+        // get uri url from nft contract
+        const uri = await nft.tokenURI(item.tokenId)
+        // use uri to fetch the nft metadata stored on ipfs 
+        const response = await fetch(uri)
+        const metadata = await response.json()
+        // get total price of item (item price + fee)
+        const totalPrice = await marketplace.getTotalPrice(item.itemId)
+        
+        // Add item to items array
+        items.push({
+          totalPrice,
+          itemId: item.itemId,
+          seller: item.seller,
+          name: metadata.name,
+          description: metadata.description,
+          image: metadata.image,
+          sold: item.sold
+        })
+      }
+      setItems(items)
+    } catch (error) {
+      console.error("Failed to load marketplace:", error);
+    } finally {
+      setLoading(false);  // Reset loading state after operation completes
     }
-    setLoading(false)
-    setItems(items)
   }, [marketplace, nft]);
 
-  const buyMarketItem = async (item) => {
+  const buyMarketItem = useCallback(async (item) => {
     console.log('Buying Market item:', item);
     await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
     loadMarketplaceItems()
     console.log('Latest Market item:', item);
-  }
+  }, [marketplace]);
 
   /*
   const fetchItemSaleHistory = useCallback(async (itemId) => {
@@ -154,7 +160,7 @@ const Home = ({ marketplace, nft, account }) => {
                   </Card.Body>
                   <Card.Footer>
                     {item.sold ? (
-                      <Card.Text>Sold at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Text>
+                      <Card.Text>Lastly sold at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Text>
                     ) : (
                       <div className='d-grid'>
                         <Button className='button-blue' onClick={() => buyMarketItem(item)} variant="primary" size="lg">

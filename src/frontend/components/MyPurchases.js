@@ -16,9 +16,11 @@ export default function MyPurchases({ marketplace, nft, account }) {
   };
 
   const loadPurchasedItems = async () => {
+    /*
     // Fetch purchased items from marketplace by quering Offered events with the buyer set as the user
     const filter =  marketplace.filters.Bought(null,null,null,null,null,account)
     const results = await marketplace.queryFilter(filter)
+    
     //Fetch metadata of each nft and add that to listedItem object.
     const purchases = await Promise.all(results.map(async i => {
       // fetch arguments from each result
@@ -30,6 +32,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
       const metadata = await response.json()
       // get total price of item (item price + fee)
       const totalPrice = await marketplace.getTotalPrice(i.itemId)
+      
       // define listed item object
       let purchasedItem = {
         totalPrice,
@@ -41,19 +44,75 @@ export default function MyPurchases({ marketplace, nft, account }) {
       }
       return purchasedItem
     }))
+
+    // Remove any items that have been resold by the current account
+    const currentOwnership = purchases.filter(item => {
+    // Check if still owned, this requires a method to verify ownership, which might not be part of your current contract
+      return marketplace.isOwner(item.itemId);
+    });
     setLoading(false)
-    setPurchases(purchases)
+    setPurchases(currentOwnership)
+    */
+
+    setLoading(true);  // Indicate loading at the beginning of the function
+
+    try{
+      // Load all purchased artifacts
+      const itemCount = await marketplace.itemCount()
+      let purchasedArtifacts = []
+
+      // Start from 1 because the contract's itemIds start from 1
+      for (let index = 1; index <= itemCount; index++) {
+        const i = await marketplace.items(index)
+        
+        if (i.seller.toLowerCase() === account) {
+          // get uri url from nft contract
+          const uri = await nft.tokenURI(i.tokenId)
+          // use uri to fetch the nft metadata stored on ipfs 
+          const response = await fetch(uri)
+          const metadata = await response.json()
+          // get total price of artifact (item price + fee)
+          const totalPrice = await marketplace.getTotalPrice(i.itemId)
+          // define listed artifact object
+          let item = {
+            totalPrice,
+            price: i.price,
+            itemId: i.itemId,
+            name: metadata.name,
+            description: metadata.description,
+            image: metadata.image
+          }
+          purchasedArtifacts.push(item)
+        }
+      }
+      setPurchases(purchasedArtifacts)
+    } catch (error) {
+      console.error("Failed to load items:", error);
+    } finally {
+      setLoading(false);  // Reset loading state after operation completes
+    }
   }
 
   const resellItem = async (itemId, price) => {
-    const priceInWei = ethers.utils.parseEther(price.toString());
-    await marketplace.resellItem(itemId, priceInWei);
+    setLoading(true);  // Set loading to true before the reselling starts
+
+    try {
+      const priceInWei = ethers.utils.parseEther(price.toString());
+      const transaction = await marketplace.resellItem(itemId, priceInWei);
+      await transaction.wait();
+      // Filter out the resold item from the purchases array
+      // setPurchases(purchases.filter(item => item.itemId !== itemId));
+      // Re-fetch the purchases to refresh the list
+      await loadPurchasedItems();
+    } catch (error) {
+      console.error("Resell failed:", error);
+    }
   };
 
   useEffect(() => {
     loadPurchasedItems()
     loadBalance()
-  }, [account])
+  }, [account, marketplace])
 
   useEffect(() => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -94,13 +153,16 @@ export default function MyPurchases({ marketplace, nft, account }) {
                   <Card.Body color="secondary">
                     <Card.Title>{item.name}</Card.Title>
                     <Card.Text>{item.description}</Card.Text>
+                    <Card.Text>Bought at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Text>
+                  </Card.Body>
+                  <Card.Footer>
                     <Form.Control
-                      size="lg"
-                      required
-                      type="number"
-                      min="1"
-                      placeholder="Price in ETH"
-                      onChange={(e) => item.resellPrice = e.target.value}/>
+                        size="lg"
+                        required
+                        type="number"
+                        min="1"
+                        placeholder="Price in ETH"
+                        onChange={(e) => item.resellPrice = e.target.value}/>
                     <div className="d-grid px-0">
                       <Button
                         className='button-blue'
@@ -110,8 +172,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                         Resell NFT
                       </Button>
                     </div>
-                  </Card.Body>
-                  <Card.Footer>Bought at {ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+                  </Card.Footer>
                 </Card>
               </Col>
             ))}

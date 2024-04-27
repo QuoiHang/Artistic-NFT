@@ -21,6 +21,7 @@ contract Marketplace is ReentrancyGuard {
         uint price;
         address payable seller;
         bool sold;
+        address creator;
     }
 
     // itemId -> Item
@@ -67,7 +68,8 @@ contract Marketplace is ReentrancyGuard {
             _price,
             // msg.sender is the seller in makeItem
             payable(msg.sender),
-            false
+            false,
+            msg.sender
         );
 
         // emit Offered event
@@ -139,4 +141,14 @@ contract Marketplace is ReentrancyGuard {
     function getTotalPrice(uint _itemId) view public returns(uint){
         return((items[_itemId].price * (100 + feePercent)) / 100);
     }
+
+    function isOwner(uint itemId) public view returns (bool) {
+        return (items[itemId].seller == msg.sender);
+    }
+
+    /*
+    function isCreator(uint itemId) public view returns (bool) {
+        return (items[itemId].creator == msg.sender);
+    }
+    */
 }

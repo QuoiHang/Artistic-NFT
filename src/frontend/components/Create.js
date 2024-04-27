@@ -61,7 +61,7 @@ const Create = ({ marketplace, nft }) => {
       await listingTx.wait();
       console.log("NFT Listed on Marketplace");
     } catch (error) {
-      console.error("Error in mintThenList:", error);
+      console.error("Error in mintThenList:", error.message);
     }
   }
   return (
