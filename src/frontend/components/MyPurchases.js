@@ -66,7 +66,10 @@ export default function MyPurchases({ marketplace, nft, account }) {
       for (let index = 1; index <= itemCount; index++) {
         const i = await marketplace.items(index)
         
-        if (i.seller.toLowerCase() === account) {
+        // Check if the current account is the owner of the item
+        const isCurrentOwner = await marketplace.isOwner(account, i.itemId);
+
+        if (isCurrentOwner && i.seller.toLowerCase() === account) {
           // get uri url from nft contract
           const uri = await nft.tokenURI(i.tokenId)
           // use uri to fetch the nft metadata stored on ipfs 
@@ -106,8 +109,6 @@ export default function MyPurchases({ marketplace, nft, account }) {
     // resolve promise to get the tokenId
     const item = await itemPromise;
     const tokenId = item.tokenId;
-    console.log(tokenId);
-    // console.log(realItem.tokenId);
     setLoading(true);  // Set loading to true before the reselling starts
 
     try {
