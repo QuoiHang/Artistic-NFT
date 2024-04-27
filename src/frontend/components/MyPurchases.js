@@ -94,6 +94,8 @@ export default function MyPurchases({ marketplace, nft, account }) {
   }
 
   const resellItem = async (itemId, price) => {
+    console.log(`Reselling item ${itemId} at price ${price}`);
+    console.log('Selling item:', marketplace.items(itemId));
     setLoading(true);  // Set loading to true before the reselling starts
 
     try {

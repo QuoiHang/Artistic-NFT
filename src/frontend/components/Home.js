@@ -55,10 +55,16 @@ const Home = ({ marketplace, nft, account }) => {
 
   const buyMarketItem = useCallback(async (item) => {
     console.log('Buying Market item:', item);
-    await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
-    loadMarketplaceItems()
-    console.log('Latest Market item:', item);
-  }, [marketplace]);
+  try {
+    const transaction = await marketplace.purchaseItem(item.itemId, { value: item.totalPrice });
+    await transaction.wait();
+    loadMarketplaceItems();
+    console.log('Item purchased:', item);
+  } catch (error) {
+    console.error('Error purchasing item:', error);
+    alert('Transaction failed: ' + error.message);
+  }
+}, [marketplace]);
 
   /*
   const fetchItemSaleHistory = useCallback(async (itemId) => {
