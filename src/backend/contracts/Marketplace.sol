@@ -11,40 +11,41 @@ contract Marketplace is ReentrancyGuard {
     // the account that receives fees
     address payable public immutable feeAccount; 
     // _feePercent is the percentage of the fee that will be taken from the sale price
-    uint public immutable feePercent;
-    uint public itemCount; 
+    uint256 public immutable feePercent;
+    uint256 public itemCount; 
 
     struct Item {
-        uint itemId;
+        uint256 itemId;    // the id of the item in the marketplace
         IERC721 nft;
-        uint tokenId;
-        uint price;
+        uint256 tokenId;   // the id of the token in the nft contract
+        uint256 price;
         address payable seller;
         bool sold;
+        address creator;
     }
 
     // itemId -> Item
-    mapping(uint => Item) public items;
+    mapping(uint256 => Item) public items;
 
     event Offered(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller
     );
     
     event Bought(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller,
         address indexed buyer
     );
 
     // Constructor
-    constructor(uint _feePercent) {
+    constructor(uint256 _feePercent) {
         // feeAccount (sender) is the account that deploys the contract
         feeAccount = payable(msg.sender);
         // feePercent is the service fee over the sale price
@@ -52,12 +53,13 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // Make item to offer on the marketplace
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
+    function makeItem(IERC721 _nft, uint256 _tokenId, uint256 _price) external nonReentrant {
         require(_price > 0, "Price must be greater than zero");
         // increment itemCount
         itemCount ++;
         // transfer nft
         _nft.transferFrom(msg.sender, address(this), _tokenId);
+
         // add new item to items mapping
         items[itemCount] = Item (
             itemCount,
@@ -66,7 +68,8 @@ contract Marketplace is ReentrancyGuard {
             _price,
             // msg.sender is the seller in makeItem
             payable(msg.sender),
-            false
+            false,
+            msg.sender
         );
 
         // emit Offered event
@@ -80,8 +83,8 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
-    function purchaseItem(uint _itemId) external payable nonReentrant {
-        uint _totalPrice = getTotalPrice(_itemId);
+    function purchaseItem(uint256 _itemId) external payable nonReentrant {
+        uint256 _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
         require(msg.value >= _totalPrice, "Not enough Ether to cover item price and market fee");
@@ -96,7 +99,9 @@ contract Marketplace is ReentrancyGuard {
         // safeTransferFrom(address from, address to, uint256 tokenId)
         // Transfer nft to buyer
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
-        
+        // update seller to last buyer
+        item.seller = payable(msg.sender);
+
         // Emit Bought event
         emit Bought(
             _itemId,
@@ -109,7 +114,42 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
-    function getTotalPrice(uint _itemId) view public returns(uint){
+    function isApprovedOrOwner(address nftContract, uint256 tokenId) public view returns (bool) {
+        IERC721 nft = IERC721(nftContract);
+        return (nft.getApproved(tokenId) == address(this) || nft.ownerOf(tokenId) == msg.sender);
+    }
+
+    // Resell item
+    function resellItem(uint256 _itemId, uint256 _price) external nonReentrant {
+        Item storage item = items[_itemId];
+        require(_price > 0, "Price must be greater than zero");
+        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        require(isApprovedOrOwner(address(item.nft), item.tokenId), "Contract not approved to manage this NFT");
+        require(msg.sender == item.seller, "Only the seller can resell the item");
+
+        item.price = _price;
+        item.sold = false;
+
+        // transfer nft
+        item.nft.transferFrom(msg.sender, address(this), item.tokenId);
+
+        // emit Offered event
+        emit Offered(
+            _itemId,
+            address(item.nft),
+            item.tokenId,
+            _price,
+            // msg.sender is the seller in makeItem
+            msg.sender
+        );
+    }
+
+    function getTotalPrice(uint256 _itemId) view public returns(uint256){
         return((items[_itemId].price * (100 + feePercent)) / 100);
     }
+
+    function isOwner(uint256 itemId) public view returns (bool) {
+        return (items[itemId].seller == msg.sender);
+    }
+
 }

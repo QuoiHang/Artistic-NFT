@@ -18,3 +18,22 @@ body{
 .balance-info{
   padding-top: 1em;
 }
+
+/* Card image default state with smooth transition */
+.card-img-top {
+  transition: transform 0.2s ease-in-out;
+  display: block; /* Ensure the image is block level for proper scaling */
+  width: 100%; /* Ensure the image covers the card width */
+  height: auto; /* Maintain aspect ratio */
+}
+
+/* Enlarge image on card hover */
+.card:hover .card-img-top {
+  transform: scale(1.05); /* Scale the image up */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Ensure the card content doesn’t overflow its boundary */
+.card {
+  overflow: hidden; /* This is typically default, ensures content respects card boundaries */
+}

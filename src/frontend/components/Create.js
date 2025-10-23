@@ -11,93 +11,58 @@ const Create = ({ marketplace, nft }) => {
   const [desc, setDescription] = useState("")
   const [price, setPrice] = useState("")
 
-  // Assume it is the IPFS for storing all NFTs
-  const REACT_APP_PINATA_API_KEY="ed269603055a4337e099"
-  const REACT_APP_PINATA_SECRET_API_KEY="fad0b854d1e45936b725415469d0410d1d3c08ec8d283e828e1690fb24ee4801"
-
-  const sendJSONtoIPFS = async (ImgHash) => {
-
-    try {
-      console.log("Processing Json");
-      // Create a Blob from your JSON data
-      const jsonBlob = new Blob([JSON.stringify({
-        name: name,
-        description: desc,
-        image: ImgHash
-      })], { type: 'application/json' });
-
-      // Create FormData and append the Blob as a file
-      // formData.append(fieldName, file, fileName);
-      const formData = new FormData();
-      formData.append("file", jsonBlob, `${name}.json`);
-
-      // Use the pinFileToIPFS endpoint
-      const resFile = await axios({
-        method: "post",
-        url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-        data: formData,
-        headers: {
-          'pinata_api_key': REACT_APP_PINATA_API_KEY,
-          'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY,
-          "Content-Type": "multipart/form-data"
-        },
-      });
-
-      const tokenURI = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
-      console.log("Token URI", tokenURI);
-      mintThenList(tokenURI)
-
-    } catch (error) {
-      console.log("JSON to IPFS: ")
-      console.log(error);
-    }
-  }
-
   const sendFileToIPFS = async (e) => {
-
     e.preventDefault();
-    console.log("Sending File To IPFS");
-    console.log(e);
-
     if (fileImg) {
       try {
-        console.log("Processing File");
+        console.log("Sending File To IPFS");
         const formData = new FormData();
         formData.append("file", fileImg);
-        console.log(formData)
+        formData.append("name", name);
+        formData.append("description", desc);
 
-        const resFile = await axios({
-          method: "post",
-          url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-          data: formData,
-          headers: {
-            'pinata_api_key': REACT_APP_PINATA_API_KEY,
-            'pinata_secret_api_key': REACT_APP_PINATA_SECRET_API_KEY,
-            "Content-Type": "multipart/form-data"
-          },
+        const res = await axios.post("http://localhost:3001/upload", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
         });
 
-        const ImgHash = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
-        console.log(ImgHash);
-        sendJSONtoIPFS(ImgHash)
-
+        const { tokenURI } = res.data;
+        console.log("Token URI", tokenURI);
+        mintThenList(tokenURI);
+        
       } catch (error) {
-        console.log("File to IPFS: ")
-        console.log(error)
+        console.log("Error uploading file", error);
       }
     }
-  }
-
+  };
+  
   const mintThenList = async (uri) => {
-    // mint nft 
-    await (await nft.mint(uri)).wait()
-    // get tokenId of new nft 
-    const id = await nft.tokenCount()
-    // approve marketplace to spend nft
-    await (await nft.setApprovalForAll(marketplace.address, true)).wait()
-    // add nft to marketplace
-    const listingPrice = ethers.utils.parseEther(price.toString())
-    await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()
+    //console.log("URI:", uri);
+    //console.log("Price:", price);
+
+    try{
+      // mint nft 
+      const mintTx = await nft.mint(uri);
+      await mintTx.wait();
+      console.log("NFT Minted");
+
+      // get tokenId of new nft 
+      const tokenId = await nft.tokenCount();
+      console.log("Token ID", tokenId.toString());
+
+      // approve marketplace to spend nft
+      await (await nft.setApprovalForAll(marketplace.address, true)).wait();
+      console.log("Marketplace approved");
+
+      // add nft to marketplace
+      const listingPrice = ethers.utils.parseEther(price.toString());
+      const listingTx = await marketplace.makeItem(nft.address, tokenId, listingPrice);
+      await listingTx.wait();
+      console.log("NFT Listed on Marketplace");
+    } catch (error) {
+      console.error("Error in mintThenList:", error.message);
+    }
   }
   return (
 
